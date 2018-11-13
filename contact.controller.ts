@@ -38,9 +38,16 @@ class ContactController{
 			'<label></label><a href="#" class="text-danger" onclick="ctrl.edit(event,' + contact.id + ')"><span class="glyphicon glyphicon-edit"></span>Edit</a><br/>';
     }
     
-    select(event: any, id: number ){
+    select(event: any, id: number){
         this.selectedId = id;
         this.drawViewDetails(this.selectedId);
         this.drawContactList();
     }
+
+    remove(event: any, id: number){
+        this.contactService.deleteById(id);
+        this.drawViewDetails(this.selectedId);
+        this.drawContactList();
+    }
+
 }

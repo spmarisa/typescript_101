@@ -14,6 +14,17 @@ var ContactService = /** @class */ (function () {
     ContactService.prototype.getById = function (id) {
         return this.CONTACTS.filter(function (x) { return x.id == id; })[0];
     };
+    ContactService.prototype.deleteById = function (id) {
+        var ind = this.findIndexById(id);
+        if (ind >= 0)
+            this.CONTACTS.splice(ind, 1);
+    };
+    ContactService.prototype.findIndexById = function (contactId) {
+        var contact = this.getById(contactId);
+        if (!contact)
+            return -1;
+        return this.CONTACTS.indexOf(contact);
+    };
     return ContactService;
 }());
 var ContactController = /** @class */ (function () {
@@ -49,6 +60,11 @@ var ContactController = /** @class */ (function () {
     };
     ContactController.prototype.select = function (event, id) {
         this.selectedId = id;
+        this.drawViewDetails(this.selectedId);
+        this.drawContactList();
+    };
+    ContactController.prototype.remove = function (event, id) {
+        this.contactService.deleteById(id);
         this.drawViewDetails(this.selectedId);
         this.drawContactList();
     };

@@ -14,4 +14,17 @@ class ContactService{
     getById(id): Contact{
         return this.CONTACTS.filter(x => x.id == id)[0];
     }
+
+    deleteById(id: number): void {
+		var ind = this.findIndexById(id);
+		if( ind>=0 )
+			this.CONTACTS.splice(ind,1);
+	}
+    
+	private findIndexById(contactId: number): number {
+		var contact = this.getById(contactId);
+		if( !contact ) return -1;
+
+		return this.CONTACTS.indexOf(contact);
+	} 
 }
