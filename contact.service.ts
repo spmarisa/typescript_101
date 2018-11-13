@@ -11,7 +11,7 @@ class ContactService{
         return this.CONTACTS;
     }
 
-    get(): Contact{
-        return this.CONTACTS[0];
+    getById(id): Contact{
+        return this.CONTACTS.filter(x => x.id == id)[0];
     }
 }

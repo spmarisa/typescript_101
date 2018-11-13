@@ -11,17 +11,47 @@ var ContactService = /** @class */ (function () {
     ContactService.prototype.getAll = function () {
         return this.CONTACTS;
     };
-    ContactService.prototype.get = function () {
-        return this.CONTACTS[0];
+    ContactService.prototype.getById = function (id) {
+        return this.CONTACTS.filter(function (x) { return x.id == id; })[0];
     };
     return ContactService;
 }());
 var ContactController = /** @class */ (function () {
     function ContactController(contactService) {
         this.contactService = contactService;
-        console.log("Hello");
-        console.log(contactService.getAll());
+        this.selectedId = 1;
+        this.drawContactList();
+        this.drawViewDetails(this.selectedId);
     }
+    ContactController.prototype.drawContactList = function () {
+        var allContacts = this.contactService.getAll();
+        var html = '<ul>';
+        for (var i in allContacts) {
+            var contact = allContacts[i];
+            html +=
+                "<li class='item" + (this.selectedId == contact.id ? ' active' : '') + "'>" +
+                    "<a href='#' onclick='ctrl.select(event, " + contact.id + ")'>" + contact.firstName + ' ' + contact.lastName.toUpperCase() + "</a>" +
+                    "<a href='#' onclick='ctrl.remove(event, " + contact.id + ")' class='remove' title='Remove'><span class='glyphicon glyphicon-remove-sign'></span></a>" +
+                    "</li>";
+        }
+        html += '</ul>';
+        var contactsListContainer = document.getElementById('contactsListContainer');
+        contactsListContainer.innerHTML = html;
+    };
+    ContactController.prototype.drawViewDetails = function (contactId) {
+        var contactsDetailsContainer = document.getElementById('contactsDetailsContainer');
+        var contact = this.contactService.getById(contactId);
+        contactsDetailsContainer.innerHTML =
+            '<label>First Name: </label><b>' + contact.firstName + '</b><br/>' +
+                '<label>Last Name: </label><b>' + contact.lastName + '</b><br/>' +
+                '<label>email: </label><b>' + contact.email + '</b><br/>' +
+                '<label></label><a href="#" class="text-danger" onclick="ctrl.edit(event,' + contact.id + ')"><span class="glyphicon glyphicon-edit"></span>Edit</a><br/>';
+    };
+    ContactController.prototype.select = function (event, id) {
+        this.selectedId = id;
+        this.drawViewDetails(this.selectedId);
+        this.drawContactList();
+    };
     return ContactController;
 }());
 /// <reference path="contact.service.ts" />
