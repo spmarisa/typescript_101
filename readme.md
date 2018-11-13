@@ -9,15 +9,11 @@ tsc --watch
 
 npm init
 
-npm install --
+npm install --save-dev typescript
+npm install --save-dev http-server
+npm install --save-dev concurrently
 
-yarm add http-server
 
 npm install
-yearn install
-
-
-yarn add concurrently
-
 
 npm start

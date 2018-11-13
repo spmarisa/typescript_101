@@ -1,3 +1,13 @@
+var ContactService = /** @class */ (function () {
+    function ContactService() {
+    }
+    return ContactService;
+}());
+var Contact = /** @class */ (function () {
+    function Contact() {
+    }
+    return Contact;
+}());
 var Greeter = /** @class */ (function () {
     function Greeter(message) {
         this.greeting = message;
@@ -7,7 +17,7 @@ var Greeter = /** @class */ (function () {
     };
     return Greeter;
 }());
-var greeter = new Greeter("worlds");
+var greeter = new Greeter("hello");
 var button = document.createElement('button');
 button.textContent = "Say Hello";
 button.onclick = function () {
