@@ -1,8 +1,8 @@
-declare interface Array<T> {
-	find(f: (T) => boolean ): T
-}
+// declare interface Array<T> {
+// 	find(f: (T) => boolean ): T
+// }
 
-class ContactService {
+export class ContactService {
 	private static _contactId = 1;
 	private CONTACTS: Contact[] = [
 			{ id: ContactService._contactId++, firstName: "Max", lastName: "Smith", email: "max@gmail.com" },

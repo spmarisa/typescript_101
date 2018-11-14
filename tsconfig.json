@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
-      "module": "amd",
+      "module": "system",
       "target": "es5",
       "noImplicitAny": false,
       "sourceMap": true,
-      "outFile": "js/app.js"
+      "outDir": "./src"
   },
   "exclude": [
       "node_modules"

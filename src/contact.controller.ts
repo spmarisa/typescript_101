@@ -1,6 +1,13 @@
+import { ContactService } from './contact.service';
+// import { EditMode } from './contact.service';
 
 
-class ContactController {
+/// <reference path="contact.interface.ts" />
+/// <reference path="contact-edit.form.ts" />
+/// <reference path="edit-mode.enum.ts" />
+/// <reference path="contacts.service.ts" />
+
+export class ContactController {
     public selectedId = 1
     public editMode: EditMode;
     constructor(private contactService: ContactService) {
