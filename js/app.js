@@ -1,28 +1,35 @@
 var ContactService = /** @class */ (function () {
     function ContactService() {
         this.CONTACTS = [
-            { id: 1, firstName: "Max", lastName: "Smith", email: "max@gmail.com" },
-            { id: 2, firstName: "Chris", lastName: "Raches", email: "chris@gmail.com" },
-            { id: 3, firstName: "Michael", lastName: "Alloy", email: "michael@gmail.com" },
-            { id: 4, firstName: "John", lastName: "Doe", email: "john@gmail.com" },
-            { id: 5, firstName: "Jenny", lastName: "Doe", email: "jenny@gmail.com" }
+            { id: ContactService._contactId++, firstName: "Max", lastName: "Smith", email: "max@gmail.com" },
+            { id: ContactService._contactId++, firstName: "Chris", lastName: "Raches", email: "chris@gmail.com" },
+            { id: ContactService._contactId++, firstName: "Michael", lastName: "Alloy", email: "michael@gmail.com" },
+            { id: ContactService._contactId++, firstName: "John", lastName: "Doe", email: "john@gmail.com" },
+            { id: ContactService._contactId++, firstName: "Jenny", lastName: "Doe", email: "jenny@gmail.com" }
         ];
     }
     ContactService.prototype.getAll = function () {
         return this.CONTACTS;
     };
-    ContactService.prototype.getById = function (id) {
+    ContactService.prototype.get = function (id) {
         return this.findById(id);
     };
+    ContactService.prototype.create = function (contact) {
+        contact.id = ContactService._contactId++;
+        this.CONTACTS.push(contact);
+        return contact.id;
+    };
+    ContactService.prototype.update = function (contact) {
+        var idx = this.findIndexById(contact.id);
+        this.CONTACTS.splice(idx, 1, contact);
+        return contact.id;
+    };
     ContactService.prototype.remove = function (id) {
-        var ind = this.findIndexById(id);
-        if (ind >= 0)
-            this.CONTACTS.splice(ind, 1);
+        var index = this.findIndexById(id);
+        this.CONTACTS.splice(index, 1);
     };
     ContactService.prototype.findById = function (contactId) {
-        return this.CONTACTS.find(function (row) {
-            return row.id == contactId;
-        });
+        return this.CONTACTS.find(function (contact) { return contact.id == contactId; });
     };
     ContactService.prototype.findIndexById = function (contactId) {
         var contact = this.findById(contactId);
@@ -30,25 +37,15 @@ var ContactService = /** @class */ (function () {
             return -1;
         return this.CONTACTS.indexOf(contact);
     };
-    ContactService.prototype.update = function (contact) {
-        var ind = this.findIndexById(contact.id);
-        if (ind < 0)
-            return null;
-        this.CONTACTS.splice(ind, 1, contact);
-        return contact.id;
-    };
-    ContactService.prototype.add = function (contact) {
-        contact.id = ++ContactService._contactId;
-        this.CONTACTS.push(contact);
-        return contact.id;
-    };
+    ContactService._contactId = 1;
     return ContactService;
 }());
 var ContactController = /** @class */ (function () {
     function ContactController(contactService) {
         this.contactService = contactService;
+        this.selectedId = 1;
         this.drawContactsList();
-        // this.drawViewDetails(this.selectedId);
+        this.drawContactsDetails();
     }
     ContactController.prototype.drawContactsList = function () {
         var contacts = this.contactService.getAll();
@@ -62,82 +59,105 @@ var ContactController = /** @class */ (function () {
                     "</li>";
         }
         html += '</ul>';
-        var contactsListContainer = document.getElementById('contactsListContainer');
-        contactsListContainer.innerHTML = html;
+        var container = document.getElementById('contactsListContainer');
+        container.innerHTML = html;
     };
     ContactController.prototype.select = function (event, contactId) {
-        this.selectedId = contactId;
-        this.drawContactsList();
-        this.drawViewDetails(contactId);
         event.preventDefault();
-        return false;
+        this.selectedId = contactId;
+        this.drawContactsDetails();
+        this.drawContactsList();
     };
-    ContactController.prototype.drawViewDetails = function (contactId) {
-        var contactsDetailsContainer = document.getElementById('contactsDetailsContainer');
-        var contact = this.contactService.getById(contactId);
-        contactsDetailsContainer.innerHTML =
+    ContactController.prototype.drawContactsDetails = function () {
+        var contact = this.contactService.get(this.selectedId);
+        var container = document.getElementById('contactsDetailsContainer');
+        container.innerHTML =
             '<label>First Name: </label><b>' + contact.firstName + '</b><br/>' +
                 '<label>Last Name: </label><b>' + contact.lastName + '</b><br/>' +
                 '<label>email: </label><b>' + contact.email + '</b><br/>' +
                 '<label></label><a href="#" class="text-danger" onclick="ctrl.edit(event,' + contact.id + ')"><span class="glyphicon glyphicon-edit"></span>Edit</a><br/>';
     };
-    ContactController.prototype.clearDetails = function () {
-        var contactsDetailsContainer = document.getElementById('contactsDetailsContainer');
-        contactsDetailsContainer.innerHTML = '';
-    };
-    ContactController.prototype.remove = function (event, clientId) {
-        if (this.selectedId == clientId)
-            this.clearDetails();
-        this.contactService.remove(clientId);
-        this.drawContactsList();
+    ContactController.prototype.edit = function (event, contactId) {
         event.preventDefault();
-        return false;
+        this.selectedId = contactId;
+        this.editMode = EditMode.Edit;
+        this.drawEditContactsDetails();
     };
     ContactController.prototype.add = function (event) {
-        this.editMode = 0 /* add */;
-        this.selectedId = null;
+        event.preventDefault();
+        this.selectedId = undefined;
+        this.editMode = EditMode.Add;
         this.drawContactsList();
-        this.drawEditDetails(null);
+        this.drawEditContactsDetails();
+    };
+    ContactController.prototype.drawEditContactsDetails = function () {
+        var contact;
+        if (this.editMode === EditMode.Edit) {
+            contact = this.contactService.get(this.selectedId);
+        }
+        else {
+            contact = {
+                id: undefined,
+                firstName: '',
+                lastName: '',
+                email: ''
+            };
+        }
+        var contactId = contact.id;
+        var container = document.getElementById('contactsDetailsContainer');
+        container.innerHTML = '<form name="editContactForm" onsubmit="ctrl.submit(event)">' +
+            '<input name="contactId" type="hidden" value="' + contact.id + '">' +
+            '<label>First Name: </label><input name="firstName" value="' + contact.firstName + '"><br/>' +
+            '<label>Last Name: </label><input name="lastName" value="' + contact.lastName + '"><br/>' +
+            '<label>Email: </label><input name="email" value="' + contact.email + '"><br/>' +
+            '<label></label><input type="submit" class="btn btn-danger" value="' + (!contactId ? 'Add' : 'Save') + '"/>' +
+            '<a href="#" class="text-danger" onclick="ctrl.cancelEdit(event)">Cancel</a>' +
+            '</form>';
+        var firstNameField = document.editContactForm.firstName;
+        firstNameField.focus();
+        firstNameField.select();
+    };
+    ContactController.prototype.remove = function (event, contactId) {
         event.preventDefault();
-        return false;
-    };
-    ContactController.prototype.edit = function (event, clientId) {
-        this.editMode = 1 /* edit */;
-        this.drawEditDetails(clientId);
-        event.preventDefault();
-        return false;
-    };
-    ContactController.prototype.drawEditDetails = function (contactId) {
-        var contact = !contactId ? { id: '', firstName: '', lastName: '', email: '' } : this.contactsService.getById(contactId);
-        var contactsDetailsContainer = document.getElementById('contactsDetailsContainer');
-        contactsDetailsContainer.innerHTML =
-            '<form name="editContactForm" onsubmit="ctrl.submit(event)">' +
-                '<input name="contactId" type="hidden" value="' + contact.id + '">' +
-                '<label>First Name: </label><input name="firstName" value="' + contact.firstName + '"><br/>' +
-                '<label>Last Name: </label><input name="lastName" value="' + contact.lastName + '"><br/>' +
-                '<label>Email: </label><input name="email" value="' + contact.email + '"><br/>' +
-                '<label></label><input type="submit" class="btn btn-danger" value="' + (!contactId ? 'Add' : 'Save') + '"/>' +
-                '<a href="#" class="text-danger" onclick="ctrl.cancelEdit(event)">Cancel</a>' +
-                '</form>';
-        var firstNameInput = document.editContactForm.firstName;
-        firstNameInput.focus();
-        firstNameInput.select();
-    };
-    ContactController.prototype.cancelEdit = function (event) {
-        if (this.editMode == 1 /* edit */)
-            this.drawViewDetails(this.selectedId);
-        else
+        this.contactService.remove(contactId);
+        if (contactId == this.selectedId) {
             this.clearDetails();
-        event.preventDefault();
-        return false;
+        }
+        this.drawContactsList();
     };
     ContactController.prototype.submit = function (event) {
         event.preventDefault();
-        var fomValid = this.validate();
-        if (!fomValid)
+        var isFormValid = this.validate();
+        if (!isFormValid) {
             return;
-        this.save();
-        return false;
+        }
+        var form = document.editContactForm;
+        var contact = {
+            id: this.editMode === EditMode.Edit ? this.selectedId : undefined,
+            firstName: form.firstName.value,
+            lastName: form.lastName.value,
+            email: form.email.value
+        };
+        if (this.editMode == EditMode.Add) {
+            this.selectedId = this.contactService.create(contact);
+        }
+        else {
+            this.selectedId = this.contactService.update(contact);
+        }
+        this.drawContactsList();
+        this.drawContactsDetails();
+    };
+    ContactController.prototype.cancelEdit = function () {
+        if (this.selectedId == undefined) {
+            this.clearDetails();
+        }
+        else {
+            this.drawContactsDetails();
+        }
+    };
+    ContactController.prototype.clearDetails = function () {
+        var contactsDetailsContainer = document.getElementById('contactsDetailsContainer');
+        contactsDetailsContainer.innerHTML = '';
     };
     ContactController.prototype.validate = function () {
         var res = false;
@@ -151,23 +171,6 @@ var ContactController = /** @class */ (function () {
         else
             res = true;
         return res;
-    };
-    ContactController.prototype.save = function () {
-        var form = document.editContactForm;
-        var client = {
-            id: +form.contactId.value,
-            firstName: form.firstName.value,
-            lastName: form.lastName.value,
-            email: form.email.value
-        };
-        var contactId;
-        if (this.editMode == 0 /* add */)
-            contactId = this.contactService.add(client);
-        else
-            contactId = this.contactService.update(client);
-        this.selectedId = contactId;
-        this.drawContactsList();
-        this.drawViewDetails(this.selectedId);
     };
     return ContactController;
 }());
@@ -184,4 +187,9 @@ var Contact = /** @class */ (function () {
     }
     return Contact;
 }());
+var EditMode;
+(function (EditMode) {
+    EditMode[EditMode["Add"] = 0] = "Add";
+    EditMode[EditMode["Edit"] = 1] = "Edit";
+})(EditMode || (EditMode = {}));
 //# sourceMappingURL=app.js.map

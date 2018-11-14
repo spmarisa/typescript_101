@@ -1,2 +1,1 @@
-const enum EditMode { add, 
-                      edit }
+enum EditMode { Add, Edit }

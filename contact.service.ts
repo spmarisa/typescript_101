@@ -2,56 +2,52 @@ declare interface Array<T> {
 	find(f: (T) => boolean ): T
 }
 
-class ContactService{
-    private CONTACTS: Contact[] = [
-        { id: 1, firstName: "Max", lastName: "Smith", email: "max@gmail.com" },
-        { id: 2, firstName: "Chris", lastName: "Raches", email: "chris@gmail.com" },
-        { id: 3, firstName: "Michael", lastName: "Alloy", email: "michael@gmail.com" },
-        { id: 4, firstName: "John", lastName: "Doe", email: "john@gmail.com" },
-        { id: 5, firstName: "Jenny", lastName: "Doe", email: "jenny@gmail.com" }
-    ];
+class ContactService {
+	private static _contactId = 1;
+	private CONTACTS: Contact[] = [
+			{ id: ContactService._contactId++, firstName: "Max", lastName: "Smith", email: "max@gmail.com" },
+			{ id: ContactService._contactId++, firstName: "Chris", lastName: "Raches", email: "chris@gmail.com" },
+			{ id: ContactService._contactId++, firstName: "Michael", lastName: "Alloy", email: "michael@gmail.com" },
+			{ id: ContactService._contactId++, firstName: "John", lastName: "Doe", email: "john@gmail.com" },
+			{ id: ContactService._contactId++, firstName: "Jenny", lastName: "Doe", email: "jenny@gmail.com" }
+        ];
+        
+    constructor() {}
 
-	getAll(): Contact[] {
-		return this.CONTACTS;
-	}
-	
-	getById(id: number): Contact {
-		return this.findById(id);
-	}
-	
-	remove(id: number): void {
-		var ind = this.findIndexById(id);
-		if( ind>=0 )
-			this.CONTACTS.splice(ind,1);
-	}
-	
-	findById(contactId: number): Contact {
-		return this.CONTACTS.find(function(row){
-			return row.id == contactId;
-		})
-	}
+    public getAll(): Contact[] {
+        return this.CONTACTS;
+    }
 
-	private findIndexById(contactId: number): number {
-		var contact = this.findById(contactId);
-		if( !contact ) return -1;
+    public get(id:number): Contact {
+        return this.findById(id);
+    }
 
-		return this.CONTACTS.indexOf(contact);
-	}
-	
-	update(contact: Contact): number {
-		var ind = this.findIndexById(contact.id);
-		if( ind<0 ) return null;
-		
-		this.CONTACTS.splice( ind, 1, contact );
-		
-		return contact.id;
-	}
-	
-	add(contact: Contact): number {
-		contact.id = ++ContactService._contactId;
-		
-		this.CONTACTS.push( contact );
-		
-		return contact.id;
-	} 
+    public create(contact: Contact):number {
+        contact.id = ContactService._contactId++;
+        this.CONTACTS.push(contact);
+
+        return contact.id;
+    }
+
+    public update(contact: Contact) {
+        let idx = this.findIndexById(contact.id);
+        this.CONTACTS.splice(idx, 1 , contact)
+        return contact.id;
+    }
+
+    public remove(id: number) {
+        let index = this.findIndexById(id);
+        this.CONTACTS.splice(index , 1);
+    }
+
+    private findById(contactId:number):Contact  {
+        return this.CONTACTS.find(contact => contact.id == contactId)
+    }
+
+    private findIndexById(contactId) {
+        var contact = this.findById(contactId);
+        if( !contact ) return -1;
+        
+        return this.CONTACTS.indexOf(contact);
+    }
 }
